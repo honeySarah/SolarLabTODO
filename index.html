@@ -1,0 +1,120 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <div>
+        <form>
+            <label>Enter the text
+                <input type="text" id="task" placeholder="Walk the dog">
+            </label>
+            <input type="button" id="addTask" value="Add task">
+        </form>
+        <table id="taskList">
+            <thead>
+                <tr>
+                    <td>Task text</td>
+                    <td>Check</td>
+                    <td>Delete</td>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+        </table>
+    </div>
+    <script>
+        let boxes = document.getElementsByClassName('checkTask');
+
+        function SaveCheckbox() {
+            var ck = [];
+            for (let i = 0; i <= boxes.length - 1; i++) {
+                if (boxes[i].checked) {
+                    var chkType = "true";
+                    ck.push(new Check(i, chkType));
+                } else {
+                    var chkType = "false";
+                    ck.push(new Check(i, chkType));
+                }
+                localStorage.setItem("checkbox", JSON.stringify(ck));
+            }
+        }
+
+        function Check(num, chkType) {
+            this.Num = num;
+            this.CheckType = chkType;
+        };
+
+        function TaskInfo(tskText) {
+            this.Text = tskText;
+        };
+
+        $(document).ready(function () {
+            var data = JSON.parse(localStorage.getItem('tableTaskData') || {});
+            var chk = JSON.parse(localStorage.getItem('checkbox') || {});
+
+
+            for (i = 0; i <= data.length - 1; i++) {
+                $("#taskList").find('tbody')
+                    .append($('<tr>')
+                        .append($('<td>')
+                            .text(data[i].Text))
+                        .append($('<td>')
+                            .append('<input type="checkbox" class="checkTask" onclick="SaveCheckbox()" >'))
+                        .append($('<td>')
+                            .append('<input type = "button" class="deleteTask" value = "delete">'))
+                    );
+                boxes[i].checked = JSON.parse(chk[i].CheckType);
+            };
+
+
+            $('#addTask').click(function () {
+
+                $("#taskList").find('tbody')
+                    .append($('<tr>')
+                        .append($('<td>')
+                            .text($('#task').val()))
+                        .append($('<td>')
+                            .append('<input type="checkbox" class="checkTask" onclick="SaveCheckbox()">'))
+                        .append($('<td>')
+                            .append('<input type = "button" class="deleteTask" value = "delete">'))
+                    );
+                $('#task').val('');
+
+                var arr = [];
+
+                $("#taskList").find('tbody tr').each(function (index, item) {
+                    var tskText = $(item).find('td').eq(0).text();
+                    var chkType = $(item).find('td').eq(1).text();
+                    arr.push(new TaskInfo(tskText, chkType));
+                });
+
+                localStorage.setItem("tableTaskData", JSON.stringify(arr));
+
+            });
+
+
+            $("#taskList").on('click', '.deleteTask', function () {
+                $(this).closest('tr').remove();
+
+                var arr = [];
+
+                $("#taskList").find('tbody tr').each(function (index, item) {
+                    var tskText = $(item).find('td').eq(0).text();
+                    var chkType = $(item).find('td').eq(1).text();
+                    arr.push(new TaskInfo(tskText, chkType));
+                });
+
+                localStorage.setItem("tableTaskData", JSON.stringify(arr));
+                SaveCheckbox();
+            });
+
+        });
+
+    </script>
+</body>
+
+</html>
